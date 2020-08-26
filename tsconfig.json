@@ -2,7 +2,7 @@
     "compilerOptions": {
         "strict": true,
         "noUnusedLocals": true,
-        "module": "ES6",
+        "module": "CommonJS",
         "target": "ES6",
         "outDir": "lib/",
         "declaration": true,
