@@ -17,6 +17,11 @@ type TaskResult = number;
 
 // Implementation of the work to be done for a task.
 class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
+    public stop() {
+        // Connection closed.
+        // Stop some asynchronous tasks if necessary.
+    }
+
     public async doTask(task: Task) {
         let [a, b] = [0, 1];
         for (let i = 0; i < task.n - 1; i++) {

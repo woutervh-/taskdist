@@ -19,7 +19,7 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
     }
 
     public stop() {
-        //
+        this.taskHandler.stop();
     }
 
     public async receive(message: MasterMessage<Task>) {
