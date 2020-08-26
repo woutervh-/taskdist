@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "noUnusedLocals": true,
+        "module": "ES6",
+        "target": "ES6",
+        "outDir": "lib/",
+        "declaration": true,
+        "declarationDir": "lib/"
+    },
+    "include": [
+        "src/"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

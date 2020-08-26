@@ -1,0 +1,35 @@
+{
+  "name": "taskdist",
+  "version": "0.1.0",
+  "description": "Task distribution framework",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "rimraf lib/ && tsc && copy-cli \"src/**/*.d.ts\" lib/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woutervh-/taskdist.git"
+  },
+  "author": "Wouter van Heeswijk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/woutervh-/taskdist/issues"
+  },
+  "homepage": "https://github.com/woutervh-/taskdist#readme",
+  "devDependencies": {
+    "@types/node": "^10.17.28",
+    "@types/ws": "^7.2.6",
+    "copy": "^0.3.2",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "ws": "^7.3.1"
+  }
+}
