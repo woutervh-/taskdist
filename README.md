@@ -74,3 +74,8 @@ When creating a worker:
 * The worker will continuously pop tasks from the master and work on those tasks.
 * If the connection is lost, the worker will attempt to re-connect.
 * Stopping the worker will abort work on the current task and disconnect the WebSocket.
+
+### Roadmap
+
+* Option for workers to reject tasks. Worker to send "reject" message to master, and master to put the task back onto the queue.
+* Task filtering on worker side. Allow user to define which tasks can be worked on.
