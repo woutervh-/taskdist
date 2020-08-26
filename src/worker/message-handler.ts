@@ -28,13 +28,15 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
                 case 'task': {
                     const taskResult = await this.taskHandler.doTask(message.task);
                     this.sender.send({ type: 'complete', taskKey: message.taskKey, taskResult });
-                    this.sender.send({ type: 'pop' });
                     break;
                 }
             }
         } catch (error) {
             console.debug(`Message: ${JSON.stringify(message)}.`);
             console.warn('Error while handling message.', error);
+        } finally {
+            // If handling of previous task failed, pop next one from the master.
+            this.sender.send({ type: 'pop' });
         }
     }
 }
