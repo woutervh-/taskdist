@@ -6,15 +6,15 @@ import { MessageHandlerFactory } from '../shared/messages/message-handler';
 
 interface Options {
     connectTimeout: number;
-    protocol: 'ws' | 'wss';
+    protocol: 'ws:' | 'wss:';
     serverHost: string;
     serverPort: number;
 }
 
-function connect(protocol: 'ws' | 'wss', host: string, port: number): Promise<ws> {
+function connect(protocol: 'ws:' | 'wss:', host: string, port: number): Promise<ws> {
     console.info('Connecting...');
     return new Promise<ws>((resolve, reject) => {
-        const socket = new ws(`${protocol}://${host}:${port}`);
+        const socket = new ws(`${protocol}//${host}:${port}`);
         socket.once('error', reject);
         socket.once('open', () => {
             console.info(`Connected to server ${host}:${port}.`);

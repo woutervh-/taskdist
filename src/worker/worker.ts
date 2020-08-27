@@ -6,7 +6,7 @@ import { TaskHandler } from './task-handler';
 
 interface Options {
     connectTimeout?: number;
-    protocol?: 'ws' | 'wss';
+    protocol?: 'ws:' | 'wss:';
     masterHost?: string;
     masterPort?: number;
 }
@@ -14,7 +14,7 @@ interface Options {
 export class Worker<Task, TaskResult> {
     private static defaultOptions: Options = {};
     private static defaultConnectTimeout: number = 5000;
-    private static defaultProtocol: 'ws' | 'wss' = 'ws';
+    private static defaultProtocol: 'ws:' | 'wss:' = 'ws:';
     private static defaultMasterHost: string = 'localhost';
     private static defaultMasterPort: number = 4000;
 
