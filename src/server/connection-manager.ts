@@ -12,12 +12,12 @@ export class ConnectionManager<ServerMessage, ClientMessage> {
     private heartbeats: { [Key: string]: { timer: NodeJS.Timer, alive: boolean } } = {};
     private started: boolean = false;
 
-    public constructor(private server: ws.Server, private messageHandlerFactory: MessageHandlerFactory<ClientMessage, ServerMessage>, private socketTimeout: number) {
+    public constructor(private wss: ws.Server, private messageHandlerFactory: MessageHandlerFactory<ClientMessage, ServerMessage>, private socketTimeout: number) {
         //
     }
 
     public getClientCount() {
-        return this.server.clients.size;
+        return this.wss.clients.size;
     }
 
     public start() {
@@ -25,7 +25,7 @@ export class ConnectionManager<ServerMessage, ClientMessage> {
             throw new Error('ConnectionManager already started.');
         }
 
-        this.server
+        this.wss
             .once('close', this.handleClose)
             .on('connection', this.handleConnection);
 
@@ -37,8 +37,8 @@ export class ConnectionManager<ServerMessage, ClientMessage> {
             throw new Error('ConnectionManager already stopped.');
         }
 
-        this.server.removeListener('close', this.handleClose);
-        this.server.removeListener('connection', this.handleConnection);
+        this.wss.removeListener('close', this.handleClose);
+        this.wss.removeListener('connection', this.handleConnection);
         this.started = false;
     }
 
@@ -51,7 +51,7 @@ export class ConnectionManager<ServerMessage, ClientMessage> {
             }
         }
         // Close all connections.
-        for (const client of this.server.clients) {
+        for (const client of this.wss.clients) {
             client.close();
         }
     }

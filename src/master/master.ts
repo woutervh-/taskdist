@@ -1,3 +1,4 @@
+import * as ws from 'ws';
 import { Server } from '../server/server';
 import { TaskScheduler } from './scheduling/task-scheduler';
 import { TaskMessageHandlerFactory } from './message-handler';
@@ -5,6 +6,7 @@ import { MasterMessage } from '../shared/messages/master-to-worker';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
 
 interface Options {
+    httpServer?: ws.ServerOptions['server'];
     taskTimeout?: number;
     port?: number;
     listenTimeout?: number;
@@ -26,6 +28,7 @@ export class Master<Task, TaskResult> {
         this.server = new Server(
             new TaskMessageHandlerFactory(this.taskScheduler),
             {
+                server: options.httpServer,
                 port: options.port || Master.defaultPort,
                 listenTimeout: options.listenTimeout || Master.defaultListenTimeout,
                 socketTimeout: options.socketTimeout || Master.defaultSocketTimeout

@@ -4,20 +4,21 @@ import { ConnectionManager } from './connection-manager';
 import { MessageHandlerFactory } from '../shared/messages/message-handler';
 
 interface Options {
+    server: ws.ServerOptions['server'];
     port: number;
     listenTimeout: number;
     socketTimeout: number;
 }
 
-function listen(port: number) {
+function listen(server: ws.ServerOptions['server'], port: number) {
     console.info('Opening server...');
     return new Promise<ws.Server>((resolve, reject) => {
-        const server = new ws.Server({ port });
-        server
+        const wss = new ws.Server({ server, port });
+        wss
             .once('error', reject)
             .once('listening', () => {
                 console.info(`Server listening on port ${port}.`);
-                resolve(server);
+                resolve(wss);
             });
     })
 }
@@ -37,13 +38,13 @@ export class Server<ServerMessage, ClientMessage> {
         this.loop = KeepAlive.loop(
             {
                 create: async (revive) => {
-                    const server = await listen(this.options.port);
-                    const connectionManager = new ConnectionManager(server, this.messageHandlerFactory, this.options.socketTimeout);
+                    const wss = await listen(this.options.server, this.options.port);
+                    const connectionManager = new ConnectionManager(wss, this.messageHandlerFactory, this.options.socketTimeout);
 
-                    server
+                    wss
                         .once('error', (error) => {
                             console.warn('Server error.', error);
-                            server.close();
+                            wss.close();
                         })
                         .once('close', () => {
                             connectionManager.stop();
@@ -53,7 +54,7 @@ export class Server<ServerMessage, ClientMessage> {
 
                     connectionManager.start();
 
-                    return server;
+                    return wss;
                 }
             },
             this.options.listenTimeout
