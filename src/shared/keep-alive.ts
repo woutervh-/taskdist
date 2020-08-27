@@ -15,9 +15,10 @@ interface ClosableFactory {
  * The loop can be stopped, which will cause the closable to be closed, and the loop to end.
  * 
  * @param factory A factory which can create the closable.
- * @param timeout Amount of delay between the termination of the closable and the re-creation.
+ * @param delay Amount of delay between the termination of the closable and the re-creation.
  */
-export function loop(factory: ClosableFactory, timeout: number): Closable {
+export function loop(factory: ClosableFactory, delay: number): Closable {
+    let timeout: NodeJS.Timeout | undefined = undefined;
     let stopped = false;
     let currentClosable: Closable | undefined;
 
@@ -40,7 +41,7 @@ export function loop(factory: ClosableFactory, timeout: number): Closable {
 
         if (!stopped) {
             await new Promise((resolve) => {
-                global.setTimeout(resolve, timeout);
+                timeout = global.setTimeout(resolve, delay);
             });
             retry();
         }
@@ -49,6 +50,9 @@ export function loop(factory: ClosableFactory, timeout: number): Closable {
     return {
         close() {
             stopped = true;
+            if (timeout) {
+                global.clearTimeout(timeout);
+            }
             if (currentClosable) {
                 currentClosable.close();
             }
