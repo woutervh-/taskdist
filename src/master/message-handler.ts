@@ -8,7 +8,7 @@ export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandl
         //
     }
 
-    public create(sender: Sender<MasterMessage<Task>>): TaskMessageHandler<Task, TaskResult> {
+    public create(sender: Sender<MasterMessage<Task>>) {
         return new TaskMessageHandler(this.taskScheduler, sender);
     }
 }
@@ -24,7 +24,7 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
     public stop() {
         this.closed = true;
         if (this.taskDescription) {
-            this.taskScheduler.cancel(this.taskDescription.completionKey);
+            this.taskScheduler.cancel(this.taskDescription.key);
         }
     }
 
@@ -34,9 +34,9 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
                 case 'pop': {
                     this.taskDescription = await this.taskScheduler.take();
                     if (this.closed) {
-                        this.taskScheduler.cancel(this.taskDescription.completionKey);
+                        this.taskScheduler.cancel(this.taskDescription.key);
                     } else {
-                        this.sender.send({ type: 'task', taskKey: this.taskDescription.completionKey, task: this.taskDescription.task });
+                        this.sender.send({ type: 'task', taskKey: this.taskDescription.key, task: this.taskDescription.task });
                     }
                     break;
                 }

@@ -5,7 +5,7 @@ export interface TaskSchedulerOptions {
 }
 
 export interface TaskDescription<T> {
-    completionKey: string;
+    key: string;
     task: T;
 }
 
@@ -53,42 +53,42 @@ export class TaskScheduler<T, R> {
      * Takes a task from the queue to be worked on.
      * @returns A promise with a description of the task.
      * If no tasks are available, the promise will resolve when there is a task available.
-     * The `completionKey` must be used to indicate the completion of the task.
+     * The `key` must be used to indicate the completion of the task.
      */
     public async take(): Promise<TaskDescription<T>> {
-        let taskKey: string = await this.queue.dequeue();
-        while (!(taskKey in this.tasksStatus)) {
+        let key: string = await this.queue.dequeue();
+        while (!(key in this.tasksStatus)) {
             // Task in queue was already completed by a slow consumer, and put back into the queue.
             // Try the next one.
-            taskKey = await this.queue.dequeue();
+            key = await this.queue.dequeue();
         }
-        if (this.tasksStatus[taskKey].timeout) {
-            global.clearTimeout(this.tasksStatus[taskKey].timeout!);
+        if (this.tasksStatus[key].timeout) {
+            global.clearTimeout(this.tasksStatus[key].timeout!);
         }
         // Task is not completed yet, we give it to the consumer.
-        this.tasksStatus[taskKey].timeout = global.setTimeout(() => {
-            if (taskKey in this.tasksStatus) {
+        this.tasksStatus[key].timeout = global.setTimeout(() => {
+            if (key in this.tasksStatus) {
                 // Task was not complete before timeout, move task back to queue.
-                this.queue.enqueue(taskKey);
+                this.queue.enqueue(key);
             }
         }, this.timeout);
-        return { completionKey: taskKey, task: this.tasksStatus[taskKey].task };
+        return { key, task: this.tasksStatus[key].task };
     }
 
     /**
      * Deliver the result of a task that is completed.
      * Depending on whether or not (1) the maximum task timeout has been exceeded, and (2) the task has been completed before by another consumer, the result may be ignored.
      * If the result is not ignored, the producer of the task will be notified of the result.
-     * @param completionKey The key obtained from taking the task.
+     * @param key The key obtained from taking the task.
      * @param result The task completion result.
      */
-    public complete(completionKey: string, result: R) {
-        if (completionKey in this.tasksStatus) {
-            const notify = this.tasksStatus[completionKey].notify;
-            if (this.tasksStatus[completionKey].timeout) {
-                global.clearTimeout(this.tasksStatus[completionKey].timeout!);
+    public complete(key: string, result: R) {
+        if (key in this.tasksStatus) {
+            const notify = this.tasksStatus[key].notify;
+            if (this.tasksStatus[key].timeout) {
+                global.clearTimeout(this.tasksStatus[key].timeout!);
             }
-            delete this.tasksStatus[completionKey];
+            delete this.tasksStatus[key];
             notify(result);
         } else {
             // Task was completed before. Ignore result.
@@ -98,15 +98,15 @@ export class TaskScheduler<T, R> {
     /**
      * Cancel work on a task after it was taken.
      * Puts the task back onto the queue, if it hasn't been completed yet.
-     * @param completionKey The key obtained from taking the task.
+     * @param key The key obtained from taking the task.
      */
-    public cancel(completionKey: string) {
-        if (completionKey in this.tasksStatus) {
-            if (this.tasksStatus[completionKey].timeout) {
-                global.clearTimeout(this.tasksStatus[completionKey].timeout!);
-                this.tasksStatus[completionKey].timeout = null;
+    public cancel(key: string) {
+        if (key in this.tasksStatus) {
+            if (this.tasksStatus[key].timeout) {
+                global.clearTimeout(this.tasksStatus[key].timeout!);
+                this.tasksStatus[key].timeout = null;
             }
-            this.queue.enqueue(completionKey);
+            this.queue.enqueue(key);
         } else {
             // Task was completed before. Ignore cancellation.
         }

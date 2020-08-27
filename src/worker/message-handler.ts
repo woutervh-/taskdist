@@ -1,7 +1,7 @@
 import { Sender, Receiver, MessageHandlerFactory } from '../shared/messages/message-handler';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
 import { MasterMessage } from '../shared/messages/master-to-worker';
-import { TaskHandler } from '../shared/tasks/task-handler';
+import { TaskHandler } from './task-handler';
 
 export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandlerFactory<MasterMessage<Task>, WorkerMessage<TaskResult>> {
     public constructor(private taskHandler: TaskHandler<Task, TaskResult>) {
