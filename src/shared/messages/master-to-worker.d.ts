@@ -1,8 +1,7 @@
-export interface TaskMessage<Task, Data> {
+export interface TaskMessage<Task> {
     type: 'task';
     key: string;
     task: Task;
-    data: Data;
 }
 
-export type MasterMessage<Task, Data> = TaskMessage<Task, Data>;
+export type MasterMessage<Task> = TaskMessage<Task>;
