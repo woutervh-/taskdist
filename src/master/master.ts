@@ -3,6 +3,7 @@ import { TaskScheduler } from './scheduling/task-scheduler';
 import { TaskMessageHandlerFactory } from './message-handler';
 import { MasterMessage } from '../shared/messages/master-to-worker';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
+import { DataRetriever } from './data-retriever';
 
 interface Options {
     taskTimeout?: number;
@@ -11,20 +12,20 @@ interface Options {
     socketTimeout?: number;
 }
 
-export class Master<Task, TaskResult> {
+export class Master<Task, TaskResult, Data> {
     private static defaultOptions: Options = {};
     private static defaultPort: number = 4000;
     private static defaultListenTimeout: number = 5000;
     private static defaultSocketTimeout: number = 30000;
 
-    private server: Server<MasterMessage<Task>, WorkerMessage<TaskResult>>;
+    private server: Server<MasterMessage<Task, Data>, WorkerMessage<TaskResult>>;
 
     public readonly taskScheduler: TaskScheduler<Task, TaskResult>;
 
-    public constructor(options: Options = Master.defaultOptions) {
+    public constructor(private dataRetriever: DataRetriever<Task, Data>, options: Options = Master.defaultOptions) {
         this.taskScheduler = new TaskScheduler<Task, TaskResult>({ timeout: options.taskTimeout });
         this.server = new Server(
-            new TaskMessageHandlerFactory(this.taskScheduler),
+            new TaskMessageHandlerFactory(this.taskScheduler, this.dataRetriever),
             {
                 port: options.port || Master.defaultPort,
                 listenTimeout: options.listenTimeout || Master.defaultListenTimeout,

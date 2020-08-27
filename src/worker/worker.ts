@@ -11,16 +11,16 @@ interface Options {
     masterPort?: number;
 }
 
-export class Worker<Task, TaskResult> {
+export class Worker<Task, TaskResult, Data> {
     private static defaultOptions: Options = {};
     private static defaultConnectTimeout: number = 5000;
     private static defaultProtocol: 'ws' | 'wss' = 'ws';
     private static defaultMasterHost: string = 'localhost';
     private static defaultMasterPort: number = 4000;
 
-    private client: Client<MasterMessage<Task>, WorkerMessage<TaskResult>>;
+    private client: Client<MasterMessage<Task, Data>, WorkerMessage<TaskResult>>;
 
-    public constructor(taskHandler: TaskHandler<Task, TaskResult>, options: Options = Worker.defaultOptions) {
+    public constructor(taskHandler: TaskHandler<Task, TaskResult, Data>, options: Options = Worker.defaultOptions) {
         this.client = new Client(
             new TaskMessageHandlerFactory(taskHandler),
             {

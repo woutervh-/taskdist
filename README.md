@@ -15,11 +15,14 @@ interface Task {
 // The result of the task.
 type TaskResult = number;
 
+// Data that should be packaged with the task when sent to a worker.
+type Data = null;
+
 // Implementation of the work to be done for a task.
-class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
+class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult, Data> {
     public stop() {
         // Connection closed.
-        // Stop some asynchronous tasks if necessary.
+        // Close resources if necessary.
     }
 
     public async doTask(task: Task) {
@@ -31,9 +34,15 @@ class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
     }
 }
 
+class DataRetriever implements Taskdist.DataRetriever<Task, Data> {
+    public async retrieve() {
+        return null;
+    }
+}
+
 (async () => {
     // Set up master node.
-    const master = new Taskdist.Master<Task, TaskResult>({ listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
+    const master = new Taskdist.Master<Task, TaskResult, Data>(new DataRetriever(), { listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
 
     // Set up worker node.
     // Can be in the same process (as in this example).
@@ -53,7 +62,6 @@ class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
     master.stop();
     worker.stop();
 })();
-
 ```
 
 ### Master
