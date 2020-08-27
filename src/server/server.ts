@@ -5,21 +5,17 @@ import * as KeepAlive from '../shared/keep-alive';
 import { ConnectionManager } from './connection-manager';
 import { MessageHandlerFactory } from '../shared/messages/message-handler';
 
-interface ServerOptions {
+interface Options {
     port?: number;
     server?: http.Server | https.Server;
-}
-
-interface Options {
-    serverOptions: ServerOptions;
     listenTimeout: number;
     socketTimeout: number;
 }
 
-function listen(options: ServerOptions) {
+function listen(port?: number, server?: http.Server | https.Server) {
     console.info('Opening WebSocket server...');
     return new Promise<ws.Server>((resolve, reject) => {
-        const wss = new ws.Server(options);
+        const wss = new ws.Server({ port, server });
         wss
             .once('error', reject)
             .once('listening', () => {
@@ -44,7 +40,7 @@ export class Server<ServerMessage, ClientMessage> {
         this.loop = KeepAlive.loop(
             {
                 create: async (revive) => {
-                    const wss = await listen(this.options.serverOptions);
+                    const wss = await listen(this.options.port, this.options.server);
                     const connectionManager = new ConnectionManager(wss, this.messageHandlerFactory, this.options.socketTimeout);
 
                     wss

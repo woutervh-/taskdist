@@ -6,13 +6,9 @@ import { TaskMessageHandlerFactory } from './message-handler';
 import { MasterMessage } from '../shared/messages/master-to-worker';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
 
-interface ServerOptions {
+interface Options {
     port?: number;
     server?: http.Server | https.Server;
-}
-
-interface Options {
-    serverOptions?: ServerOptions;
     taskTimeout?: number;
     listenTimeout?: number;
     socketTimeout?: number;
@@ -20,7 +16,6 @@ interface Options {
 
 export class Master<Task, TaskResult> {
     private static defaultOptions: Options = {};
-    private static defaultServerOptions: ServerOptions = { port: 4000 };
     private static defaultListenTimeout: number = 5000;
     private static defaultSocketTimeout: number = 30000;
 
@@ -33,7 +28,8 @@ export class Master<Task, TaskResult> {
         this.server = new Server(
             new TaskMessageHandlerFactory(this.taskScheduler),
             {
-                serverOptions: options.serverOptions || Master.defaultServerOptions,
+                port: options.port,
+                server: options.server,
                 listenTimeout: options.listenTimeout || Master.defaultListenTimeout,
                 socketTimeout: options.socketTimeout || Master.defaultSocketTimeout
             }
