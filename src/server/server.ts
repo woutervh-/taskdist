@@ -1,15 +1,22 @@
 import * as ws from 'ws';
+import * as http from 'http';
+import * as https from 'https';
 import * as KeepAlive from '../shared/keep-alive';
 import { ConnectionManager } from './connection-manager';
 import { MessageHandlerFactory } from '../shared/messages/message-handler';
 
+interface ServerOptions {
+    port?: number;
+    server?: http.Server | https.Server;
+}
+
 interface Options {
-    serverOptions: ws.ServerOptions;
+    serverOptions: ServerOptions;
     listenTimeout: number;
     socketTimeout: number;
 }
 
-function listen(options: ws.ServerOptions) {
+function listen(options: ServerOptions) {
     console.info('Opening WebSocket server...');
     return new Promise<ws.Server>((resolve, reject) => {
         const wss = new ws.Server(options);

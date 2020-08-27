@@ -1,12 +1,18 @@
-import * as ws from 'ws';
+import * as http from 'http';
+import * as https from 'https';
 import { Server } from '../server/server';
 import { TaskScheduler } from './scheduling/task-scheduler';
 import { TaskMessageHandlerFactory } from './message-handler';
 import { MasterMessage } from '../shared/messages/master-to-worker';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
 
+interface ServerOptions {
+    port?: number;
+    server?: http.Server | https.Server;
+}
+
 interface Options {
-    serverOptions?: ws.ServerOptions;
+    serverOptions?: ServerOptions;
     taskTimeout?: number;
     listenTimeout?: number;
     socketTimeout?: number;
@@ -14,7 +20,7 @@ interface Options {
 
 export class Master<Task, TaskResult> {
     private static defaultOptions: Options = {};
-    private static defaultServerOptions: ws.ServerOptions = { port: 4000 };
+    private static defaultServerOptions: ServerOptions = { port: 4000 };
     private static defaultListenTimeout: number = 5000;
     private static defaultSocketTimeout: number = 30000;
 
