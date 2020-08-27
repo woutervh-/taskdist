@@ -4,20 +4,19 @@ import { ConnectionManager } from './connection-manager';
 import { MessageHandlerFactory } from '../shared/messages/message-handler';
 
 interface Options {
-    server: ws.ServerOptions['server'];
-    port: number;
+    serverOptions: ws.ServerOptions;
     listenTimeout: number;
     socketTimeout: number;
 }
 
-function listen(server: ws.ServerOptions['server'], port: number) {
-    console.info('Opening server...');
+function listen(options: ws.ServerOptions) {
+    console.info('Opening WebSocket server...');
     return new Promise<ws.Server>((resolve, reject) => {
-        const wss = new ws.Server({ server, port });
+        const wss = new ws.Server(options);
         wss
             .once('error', reject)
             .once('listening', () => {
-                console.info(`Server listening on port ${port}.`);
+                console.info('WebSocket server listening.');
                 resolve(wss);
             });
     })
@@ -38,7 +37,7 @@ export class Server<ServerMessage, ClientMessage> {
         this.loop = KeepAlive.loop(
             {
                 create: async (revive) => {
-                    const wss = await listen(this.options.server, this.options.port);
+                    const wss = await listen(this.options.serverOptions);
                     const connectionManager = new ConnectionManager(wss, this.messageHandlerFactory, this.options.socketTimeout);
 
                     wss
