@@ -36,13 +36,13 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
                     if (this.closed) {
                         this.taskScheduler.cancel(this.taskDescription.key);
                     } else {
-                        this.sender.send({ type: 'task', taskKey: this.taskDescription.key, task: this.taskDescription.task });
+                        this.sender.send({ type: 'task', key: this.taskDescription.key, task: this.taskDescription.task });
                     }
                     break;
                 }
                 case 'complete': {
                     this.taskDescription = null;
-                    this.taskScheduler.complete(message.taskKey, message.taskResult);
+                    this.taskScheduler.complete(message.key, message.taskResult);
                     break;
                 }
             }

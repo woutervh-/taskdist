@@ -1,6 +1,6 @@
 export interface TaskMessage<Task> {
     type: 'task';
-    taskKey: string;
+    key: string;
     task: Task;
 }
 

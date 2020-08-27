@@ -4,7 +4,7 @@ export interface PopTaskMessage {
 
 export interface CompleteTaskMessage<TaskResult> {
     type: 'complete';
-    taskKey: string;
+    key: string;
     taskResult: TaskResult;
 }
 

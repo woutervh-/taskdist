@@ -27,7 +27,7 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
             switch (message.type) {
                 case 'task': {
                     const taskResult = await this.taskHandler.doTask(message.task);
-                    this.sender.send({ type: 'complete', taskKey: message.taskKey, taskResult });
+                    this.sender.send({ type: 'complete', key: message.key, taskResult });
                     break;
                 }
             }
