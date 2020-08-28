@@ -9,7 +9,6 @@ import { WorkerMessage } from '../shared/messages/worker-to-master';
 interface Options {
     port?: number;
     server?: http.Server | https.Server;
-    taskTimeout?: number;
     listenTimeout?: number;
     socketTimeout?: number;
 }
@@ -21,10 +20,7 @@ export class Master<Task, TaskResult> {
 
     private server: Server<MasterMessage<Task>, WorkerMessage<TaskResult>>;
 
-    public readonly taskScheduler: TaskScheduler<Task, TaskResult>;
-
-    public constructor(options: Options = Master.defaultOptions) {
-        this.taskScheduler = new TaskScheduler<Task, TaskResult>({ timeout: options.taskTimeout });
+    public constructor(private taskScheduler: TaskScheduler<Task, TaskResult>, options: Options = Master.defaultOptions) {
         this.server = new Server(
             new TaskMessageHandlerFactory(this.taskScheduler),
             {

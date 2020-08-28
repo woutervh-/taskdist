@@ -33,7 +33,7 @@ class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
 
 (async () => {
     // Set up master node.
-    const master = new Taskdist.Master<Task, TaskResult>({ listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
+    const master = new Taskdist.Master(new Taskdist.FifoScheduler<Task, TaskResult>(), { listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
 
     // Set up worker node.
     // Can be in the same process (as in this example).

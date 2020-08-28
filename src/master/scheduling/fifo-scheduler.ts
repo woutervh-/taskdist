@@ -1,12 +1,8 @@
 import { BlockingQueue } from './blocking-queue';
+import { TaskScheduler, TaskDescription } from './task-scheduler';
 
-export interface TaskSchedulerOptions {
+interface Options {
     timeout?: number;
-}
-
-export interface TaskDescription<T> {
-    key: string;
-    task: T;
 }
 
 interface StatusEntry<T, R> {
@@ -22,13 +18,13 @@ interface StatusEntry<T, R> {
  * Tasks that are worked on for more than the specified `options.timeout` amount of time are put back onto the queue.
  * This ensures at-least-once execution of tasks.
  */
-export class TaskScheduler<T, R> {
+export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
     private timeout: number;
     private queue: BlockingQueue<string>;
     private tasksStatus: { [Key: string]: StatusEntry<T, R> };
     private taskCounter: number;
 
-    public constructor(options: TaskSchedulerOptions = {}) {
+    public constructor(options: Options = {}) {
         this.timeout = options.timeout === undefined ? 5000 : options.timeout;
         this.queue = new BlockingQueue<string>();
         this.tasksStatus = {};
