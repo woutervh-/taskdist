@@ -33,19 +33,21 @@ class TaskHandler implements Taskdist.TaskHandler<Task, TaskResult> {
 
 (async () => {
     // Set up master node.
-    const master = new Taskdist.Master(new Taskdist.FifoScheduler<Task, TaskResult>(), { listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
+    const taskScheduler = new Taskdist.FifoScheduler<Task, TaskResult>();
+    const master = new Taskdist.Master(taskScheduler, { listenTimeout: 5000, port: 9000, socketTimeout: 5000, taskTimeout: 30000 });
 
     // Set up worker node.
     // Can be in the same process (as in this example).
     // Can also be a different process on the same machine, or on another machine altogether.
-    const worker = new Taskdist.Worker(new TaskHandler(), { connectTimeout: 5000, masterHost: 'localhost', masterPort: 9000, protocol: 'ws' });
+    const taskHandler = new TaskHandler();
+    const worker = new Taskdist.Worker(taskHandler, { connectTimeout: 5000, masterHost: 'localhost', masterPort: 9000, protocol: 'ws' });
 
     // Start the master and worker.
     master.start();
     worker.start();
 
     // Put a task onto the queue, and await the result.
-    const result = await master.taskScheduler.put({ type: 'fibonacci', n: 10 });
+    const result = await taskScheduler.put({ type: 'fibonacci', n: 10 });
     // Log the result.
     console.log(`The 10th Fibonacci number is: ${result}.`);
 
