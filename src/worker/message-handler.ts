@@ -18,6 +18,11 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
         sender.send({ type: 'pop' });
     }
 
+    public close() {
+        // Connection will be closed.
+        // TODO: work on task should be aborted.
+    }
+
     public async receive(message: MasterMessage<Task>) {
         try {
             switch (message.type) {

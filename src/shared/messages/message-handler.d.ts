@@ -3,6 +3,7 @@ export interface Sender<Outgoing> {
 }
 
 export interface Receiver<Incoming> {
+    close(): void;
     receive(message: Incoming): void;
 }
 

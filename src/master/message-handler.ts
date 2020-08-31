@@ -14,8 +14,16 @@ export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandl
 }
 
 class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<TaskResult>> {
+    private taskKeys: Set<string> = new Set();
+
     public constructor(private taskScheduler: TaskScheduler<Task, TaskResult>, private sender: Sender<MasterMessage<Task>>) {
         //
+    }
+
+    public close() {
+        for (const key of this.taskKeys) {
+            this.taskScheduler.cancel(key);
+        }
     }
 
     public async receive(message: WorkerMessage<TaskResult>) {
@@ -23,10 +31,12 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
             switch (message.type) {
                 case 'pop': {
                     const taskDescription = await this.taskScheduler.take();
+                    this.taskKeys.add(taskDescription.key);
                     this.sender.send({ type: 'task', key: taskDescription.key, task: taskDescription.task });
                     break;
                 }
                 case 'complete': {
+                    this.taskKeys.delete(message.key);
                     this.taskScheduler.complete(message.key, message.taskResult);
                     break;
                 }

@@ -7,5 +7,6 @@ export interface TaskScheduler<T, R> {
     put(task: T): Promise<R>;
     take(): Promise<TaskDescription<T>>;
     complete(key: string, result: R): void;
+    cancel(key: string): void;
     abortAll(): void;
 }

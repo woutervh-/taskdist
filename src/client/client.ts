@@ -49,6 +49,7 @@ export class Client<ServerMessage, ClientMessage> {
                         .once('close', () => {
                             console.info('Connection closed.');
                             socketHandler.stop();
+                            socketHandler.receiver.close();
                             revive();
                         });
 
