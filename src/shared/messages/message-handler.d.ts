@@ -4,7 +4,7 @@ export interface Sender<Outgoing> {
 
 export interface Receiver<Incoming> {
     receive(message: Incoming): void;
-    stop(): void;
+    close(): void;
 }
 
 export interface MessageHandlerFactory<Incoming, Outgoing> {

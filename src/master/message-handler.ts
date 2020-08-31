@@ -1,7 +1,7 @@
 import { Sender, Receiver, MessageHandlerFactory } from '../shared/messages/message-handler';
 import { WorkerMessage } from '../shared/messages/worker-to-master';
 import { MasterMessage } from '../shared/messages/master-to-worker';
-import { TaskScheduler, TaskDescription } from './scheduling/task-scheduler';
+import { TaskScheduler } from './scheduling/task-scheduler';
 
 export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandlerFactory<WorkerMessage<TaskResult>, MasterMessage<Task>> {
     public constructor(private taskScheduler: TaskScheduler<Task, TaskResult>) {
@@ -14,17 +14,17 @@ export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandl
 }
 
 class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<TaskResult>> {
-    private taskDescription: TaskDescription<Task> | null = null;
+    private taskKeys: Set<string> = new Set();
     private closed: boolean = false;
 
     public constructor(private taskScheduler: TaskScheduler<Task, TaskResult>, private sender: Sender<MasterMessage<Task>>) {
         //
     }
 
-    public stop() {
+    public close() {
         this.closed = true;
-        if (this.taskDescription) {
-            this.taskScheduler.cancel(this.taskDescription.key);
+        for (const taskKey of this.taskKeys) {
+            this.taskScheduler.cancel(taskKey);
         }
     }
 
@@ -32,16 +32,17 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
         try {
             switch (message.type) {
                 case 'pop': {
-                    this.taskDescription = await this.taskScheduler.take();
+                    const taskDescription = await this.taskScheduler.take();
+                    this.taskKeys.add(taskDescription.key);
                     if (this.closed) {
-                        this.taskScheduler.cancel(this.taskDescription.key);
+                        this.taskScheduler.cancel(taskDescription.key);
                     } else {
-                        this.sender.send({ type: 'task', key: this.taskDescription.key, task: this.taskDescription.task });
+                        this.sender.send({ type: 'task', key: taskDescription.key, task: taskDescription.task });
                     }
                     break;
                 }
                 case 'complete': {
-                    this.taskDescription = null;
+                    this.taskKeys.delete(message.key);
                     this.taskScheduler.complete(message.key, message.taskResult);
                     break;
                 }
