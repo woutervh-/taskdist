@@ -1,9 +1,13 @@
 interface ProducerItem<T> {
     item: T;
-    notify: () => void;
+    resolve: () => void;
+    reject: (error: Error) => void;
 }
 
-type Listener<T> = (error: Error | null, item?: T) => void;
+interface ConsumerItem<T> {
+    resolve: (item: T) => void;
+    reject: (error: Error) => void;
+}
 
 /**
  * Implements an asynchronous blocking queue.
@@ -13,7 +17,7 @@ type Listener<T> = (error: Error | null, item?: T) => void;
  */
 export class BlockingQueue<T> {
     private producerQueue: ProducerItem<T>[] = [];
-    private consumerQueue: Listener<T>[] = [];
+    private consumerQueue: ConsumerItem<T>[] = [];
 
     /**
      * The number of items waiting to be consumed.
@@ -38,9 +42,9 @@ export class BlockingQueue<T> {
         return new Promise<void>((resolve, reject) => {
             const consumer = this.consumerQueue.shift();
             if (consumer === undefined) {
-                this.producerQueue.push({ item, notify: resolve });
+                this.producerQueue.push({ item, resolve, reject });
             } else {
-                consumer(null, item);
+                consumer.resolve(item);
                 resolve();
             }
         });
@@ -56,19 +60,25 @@ export class BlockingQueue<T> {
         return new Promise<T>((resolve, reject) => {
             const item = this.producerQueue.shift();
             if (item === undefined) {
-                this.consumerQueue.push((error, item) => {
-                    if (error === null && item !== undefined) {
-                        resolve(item);
-                    } else if (error !== null) {
-                        reject(error);
-                    } else {
-                        reject(new Error('Invalid arguments.'));
-                    }
-                });
+                this.consumerQueue.push({ resolve, reject });
             } else {
                 resolve(item.item);
-                item.notify();
+                item.resolve();
             }
         });
+    }
+
+    /**
+     * Empties the queue.
+     * Any waiting consumers will be rejected.
+     * Any waiting producers will be rejected.
+     */
+    public drain(error: Error) {
+        for (const producer of this.producerQueue) {
+            producer.reject(error);
+        }
+        for (const consumer of this.consumerQueue) {
+            consumer.reject(error);
+        }
     }
 }

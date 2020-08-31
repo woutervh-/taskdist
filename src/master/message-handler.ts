@@ -49,7 +49,7 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<WorkerMessage<Tas
             }
         } catch (error) {
             console.debug(`Message: ${JSON.stringify(message)}.`);
-            console.warn(`Error while handling message.`, error);
+            console.warn('Error while handling message.', error);
         }
     }
 }

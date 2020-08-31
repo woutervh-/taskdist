@@ -8,7 +8,8 @@ interface Options {
 interface StatusEntry<T, R> {
     task: T;
     timeout: NodeJS.Timeout | null;
-    notify: (result: R) => void;
+    resolve: (result: R) => void;
+    reject: (error: Error) => void;
 }
 
 /**
@@ -38,10 +39,10 @@ export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
      * The resolved value is the result of completing the task.
      */
     public put(task: T) {
-        return new Promise<R>((resolve) => {
+        return new Promise<R>((resolve, reject) => {
             const key = (this.taskCounter++).toString();
-            this.tasksStatus[key] = { task, timeout: null, notify: resolve };
-            this.queue.enqueue(key);
+            this.tasksStatus[key] = { task, timeout: null, resolve, reject };
+            this.queue.enqueue(key).catch(FifoScheduler.ignore);
         });
     }
 
@@ -65,7 +66,7 @@ export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
         this.tasksStatus[key].timeout = global.setTimeout(() => {
             if (key in this.tasksStatus) {
                 // Task was not complete before timeout, move task back to queue.
-                this.queue.enqueue(key);
+                this.queue.enqueue(key).catch(FifoScheduler.ignore);
             }
         }, this.timeout);
         return { key, task: this.tasksStatus[key].task };
@@ -80,12 +81,12 @@ export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
      */
     public complete(key: string, result: R) {
         if (key in this.tasksStatus) {
-            const notify = this.tasksStatus[key].notify;
+            const resolve = this.tasksStatus[key].resolve;
             if (this.tasksStatus[key].timeout) {
                 global.clearTimeout(this.tasksStatus[key].timeout!);
             }
             delete this.tasksStatus[key];
-            notify(result);
+            resolve(result);
         } else {
             // Task was completed before. Ignore result.
         }
@@ -102,9 +103,28 @@ export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
                 global.clearTimeout(this.tasksStatus[key].timeout!);
                 this.tasksStatus[key].timeout = null;
             }
-            this.queue.enqueue(key);
+            this.queue.enqueue(key).catch(FifoScheduler.ignore);
         } else {
             // Task was completed before. Ignore cancellation.
         }
+    }
+
+    /**
+     * Abort all tasks.
+     */
+    public abortAll() {
+        const error = new Error('Task destroyed.');
+        this.queue.drain(error);
+        for (const key of Object.keys(this.tasksStatus)) {
+            if (this.tasksStatus[key].timeout) {
+                global.clearTimeout(this.tasksStatus[key].timeout!);
+            }
+            this.tasksStatus[key].reject(error);
+        }
+        this.tasksStatus = {};
+    }
+
+    private static ignore() {
+        //
     }
 }
