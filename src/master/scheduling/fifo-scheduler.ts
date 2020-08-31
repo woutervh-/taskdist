@@ -93,23 +93,6 @@ export class FifoScheduler<T, R> implements TaskScheduler<T, R> {
     }
 
     /**
-     * Cancel work on a task after it was taken.
-     * Puts the task back onto the queue, if it hasn't been completed yet.
-     * @param key The key obtained from taking the task.
-     */
-    public cancel(key: string) {
-        if (key in this.tasksStatus) {
-            if (this.tasksStatus[key].timeout) {
-                global.clearTimeout(this.tasksStatus[key].timeout!);
-                this.tasksStatus[key].timeout = null;
-            }
-            this.queue.enqueue(key).catch(FifoScheduler.ignore);
-        } else {
-            // Task was completed before. Ignore cancellation.
-        }
-    }
-
-    /**
      * Abort all tasks.
      */
     public abortAll() {

@@ -88,7 +88,6 @@ export class ConnectionManager<ServerMessage, ClientMessage> {
                 }
 
                 socketHandler.stop();
-                socketHandler.receiver.close();
             })
             .once('error', (error) => {
                 console.warn('Client connection error.', error);
