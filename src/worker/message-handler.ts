@@ -41,7 +41,7 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
                 console.warn('Error while handling message.', error);
             }
         }
-        if (!closed) {
+        if (!this.closed) {
             // If handling of previous task failed, pop next one from the master.
             this.sender.send({ type: 'pop' });
         }
