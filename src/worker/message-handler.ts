@@ -14,11 +14,14 @@ export class TaskMessageHandlerFactory<Task, TaskResult> implements MessageHandl
 }
 
 class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Task>> {
+    private closed = false;
+
     public constructor(private taskHandler: TaskHandler<Task, TaskResult>, private sender: Sender<WorkerMessage<TaskResult>>) {
         sender.send({ type: 'pop' });
     }
 
     public close() {
+        this.closed = true;
         // Connection will be closed.
         // TODO: work on task should be aborted.
     }
@@ -33,9 +36,12 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
                 }
             }
         } catch (error) {
-            console.debug(`Message: ${JSON.stringify(message)}.`);
-            console.warn('Error while handling message.', error);
-        } finally {
+            if (!this.closed) {
+                console.debug(`Message: ${JSON.stringify(message)}.`);
+                console.warn('Error while handling message.', error);
+            }
+        }
+        if (!closed) {
             // If handling of previous task failed, pop next one from the master.
             this.sender.send({ type: 'pop' });
         }
