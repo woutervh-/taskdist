@@ -1,6 +1,6 @@
 {
   "name": "taskdist",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Task distribution framework",
   "main": "lib/index.js",
   "module": "lib/index.js",
