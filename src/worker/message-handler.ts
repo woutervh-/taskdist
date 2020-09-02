@@ -17,7 +17,10 @@ class TaskMessageHandler<Task, TaskResult> implements Receiver<MasterMessage<Tas
     private closed = false;
 
     public constructor(private taskHandler: TaskHandler<Task, TaskResult>, private sender: Sender<WorkerMessage<TaskResult>>) {
-        sender.send({ type: 'pop' });
+        const concurrency = taskHandler.getConcurrency();
+        for (let i = 0; i < concurrency; i++) {
+            sender.send({ type: 'pop' });
+        }
     }
 
     public close() {
